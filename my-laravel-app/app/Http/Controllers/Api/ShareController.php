@@ -16,12 +16,12 @@ class ShareController extends Controller
     {
 
         $validated = $request->validate([
-            'username' => 'required|exists:users,username',
+            'username' => 'required|exists:users,name',
             'permission' => 'required|in:view,edit',
         ]);
 
 
-        $user = User::where('username', $validated['username'])->first();
+        $user = User::where('name', $validated['username'])->first();
 
 
         $taskList->sharedUsers()->syncWithoutDetaching([
@@ -36,6 +36,7 @@ class ShareController extends Controller
     public function sharedLists()
     {
         $sharedLists = auth()->user()->sharedTaskLists;
+        $sharedLists->load('tasks');
         return response()->json($sharedLists);
     }
 }

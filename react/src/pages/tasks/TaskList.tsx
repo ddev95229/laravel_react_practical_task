@@ -15,11 +15,16 @@ import {
   ListItemSecondaryAction,
   Divider,
   CircularProgress,
-  Button
+  Button,
+  Modal,
+  TextField,
+  MenuItem,
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
+import ShareIcon from '@mui/icons-material/Share';
+
 
 interface Task {
   id: number;
@@ -38,6 +43,13 @@ export default function TaskList() {
   const navigate = useNavigate();
   const [taskLists, setTaskLists] = useState<TaskList[]>([]);
   const [loading, setLoading] = useState(true);
+
+  // Sharing modal state
+  const [openShareModal, setOpenShareModal] = useState(false);
+  const [shareTaskListId, setShareTaskListId] = useState<number | null>(null);
+  const [username, setUsername] = useState('');
+  const [permission, setPermission] = useState('view');
+  const [error, setError] = useState('');
 
   useEffect(() => {
     fetchTaskLists();
@@ -60,7 +72,7 @@ export default function TaskList() {
     }
   };
 
-  const handleToggleTask = async (taskId: number, completed: boolean) => {
+  const handleToggleTask = async (taskId: number) => {
     try {
       await api.patch(`/tasks/${taskId}/toggle`);
       fetchTaskLists(); // Refresh the lists
@@ -87,6 +99,40 @@ export default function TaskList() {
     }
   };
 
+
+  const handleOpenShareModal = (taskListId: number) => {
+    setShareTaskListId(taskListId);
+    setOpenShareModal(true);
+  };
+
+  const handleCloseShareModal = () => {
+    setOpenShareModal(false);
+    setShareTaskListId(null);
+    setUsername('');
+    setPermission('view');
+    setError('');
+  };
+
+  const handleShareTaskList = async () => {
+    if (!username) {
+      setError('Username is required.');
+      return;
+    }
+
+    try {
+      await api.post(`/task-lists/${shareTaskListId}/share`, {
+        username,
+        permission,
+      });
+      handleCloseShareModal();
+      alert('Task list shared successfully!');
+    } catch (error: any) {
+      setError(
+        error.response?.data?.message || 'An error occurred while sharing.'
+      );
+    }
+  };
+
   return (
     <Container maxWidth="md">
       <Box sx={{ mt: 4, mb: 4 }}>
@@ -103,6 +149,15 @@ export default function TaskList() {
             <AddIcon />
           </Fab>
         </Box>
+        <Box>
+          <Button variant="contained" sx={{my: 2}} onClick={() => navigate('/shared-lists')}>View Shared Listing</Button>
+        </Box>
+
+        {taskLists.length == 0 && !loading && (
+
+          <Typography variant="h6">No Tasks Found</Typography>
+          
+        )}
 
         {loading ? (
           <CircularProgress />
@@ -118,6 +173,14 @@ export default function TaskList() {
                     onClick={() => navigate(`/task-lists/${taskList.id}/edit`)}
                   >
                     <EditIcon />
+                  </IconButton>
+                  
+                  <IconButton
+                    size="small"
+                    color="primary"
+                    onClick={() => handleOpenShareModal(taskList.id)}
+                  >
+                    <ShareIcon />
                   </IconButton>
                   <IconButton 
                     size="small" 
@@ -177,6 +240,54 @@ export default function TaskList() {
           ))
         )}
       </Box>
+
+         {/* Share Modal */}
+         <Modal open={openShareModal} onClose={handleCloseShareModal}>
+          <Box sx={{
+            position: 'absolute',
+            top: '50%',
+            left: '50%',
+            transform: 'translate(-50%, -50%)',
+            width: 400,
+            bgcolor: 'background.paper',
+            p: 4,
+            boxShadow: 24,
+            borderRadius: 1,
+          }}>
+            <Typography variant="h6" sx={{ mb: 2 }}>
+              Share Task List
+            </Typography>
+            <TextField
+              fullWidth
+              label="Username"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              sx={{ mb: 2 }}
+            />
+            <TextField
+              fullWidth
+              select
+              label="Permission"
+              value={permission}
+              onChange={(e) => setPermission(e.target.value)}
+              sx={{ mb: 2 }}
+            >
+              <MenuItem value="view">View</MenuItem>
+              <MenuItem value="edit">Edit</MenuItem>
+            </TextField>
+            {error && (
+              <Typography variant="body2" color="error" sx={{ mb: 2 }}>
+                {error}
+              </Typography>
+            )}
+            <Button variant="contained" onClick={handleShareTaskList} sx={{ mr: 2 }}>
+              Share
+            </Button>
+            <Button variant="outlined" onClick={handleCloseShareModal}>
+              Cancel
+            </Button>
+          </Box>
+        </Modal>
     </Container>
   );
 } 

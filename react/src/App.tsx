@@ -6,6 +6,7 @@ import Profile from './pages/user/Profile';
 import TaskList from './pages/tasks/TaskList';
 import TaskForm from './pages/tasks/TaskForm';
 import TaskListForm from './pages/tasks/TaskListForm';
+import SharedLists from './pages/tasks/SharedLists';
 
 const theme = createTheme();
 
@@ -18,6 +19,7 @@ function App() {
           <Route path="/register" element={<Register />} />
           <Route path="/profile" element={<Profile />} />
           <Route path="/tasks" element={<TaskList />} />
+          <Route path="/shared-lists" element={<SharedLists />} />
           <Route path="/task-lists/new" element={<TaskListForm />} />
           <Route path="/task-lists/:listId/edit" element={<TaskListForm />} />
           <Route path="/task-lists/:listId/tasks/new" element={<TaskForm />} />
