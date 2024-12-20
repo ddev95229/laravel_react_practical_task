@@ -12,26 +12,43 @@ import {
 } from '@mui/material';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 
+type FormData = {
+  email: string;
+  password: string;
+};
+
+type ApiResponse = {
+  token: string;
+};
+
 export default function Login() {
+  
   const navigate = useNavigate();
-  const [formData, setFormData] = useState({
+
+  const [formData, setFormData] = useState<FormData>({
     email: '',
     password: '',
   });
-  const [error, setError] = useState('');
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const [error, setError] = useState<string>('');
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent): Promise<void> => {
     e.preventDefault();
     try {
-      const response = await api.post('/login', formData);
+
+      const response = await api.post<ApiResponse>('/login', formData);
       localStorage.setItem('token', response.data.token);
       navigate('/tasks');
-    } catch (err: any) {
-      setError(err.response?.data?.message || 'Login failed');
+      
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        const axiosError = err as { response?: { data?: { message?: string } } };
+        setError(axiosError.response?.data?.message || 'Login failed');
+      }
     }
   };
 

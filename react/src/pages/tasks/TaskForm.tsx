@@ -8,17 +8,23 @@ import {
   TextField,
   Button,
   Paper,
-  Stack
+  Stack,
 } from '@mui/material';
+
+interface TaskFormData {
+  title: string;
+  description: string;
+}
 
 export default function TaskForm() {
   const navigate = useNavigate();
-  const { listId, taskId } = useParams();
-  const [formData, setFormData] = useState({
+  
+  const { listId, taskId } = useParams<{ listId: string; taskId?: string }>();
+  const [formData, setFormData] = useState<TaskFormData>({
     title: '',
-    description: ''
+    description: '',
   });
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState<boolean>(false);
 
   useEffect(() => {
     if (taskId) {
@@ -26,25 +32,25 @@ export default function TaskForm() {
     }
   }, [taskId]);
 
-  const fetchTask = async () => {
+  const fetchTask = async (): Promise<void> => {
     try {
-      const response = await api.get(`/tasks/${taskId}`);
+      const response = await api.get<{ title: string; description?: string }>(`/tasks/${taskId}`);
       setFormData({
         title: response.data.title,
-        description: response.data.description || ''
+        description: response.data.description || '',
       });
     } catch (error) {
       console.error('Error fetching task:', error);
     }
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent): Promise<void> => {
     e.preventDefault();
     setLoading(true);
     try {
       if (taskId) {
         await api.put(`/tasks/${taskId}`, formData);
-      } else {
+      } else if (listId) {
         await api.post(`/task-lists/${listId}/tasks`, formData);
       }
       navigate('/tasks');
@@ -55,7 +61,7 @@ export default function TaskForm() {
     }
   };
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>): void => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 

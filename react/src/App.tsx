@@ -1,5 +1,6 @@
+import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import { ThemeProvider, createTheme } from '@mui/material';
+import { ThemeProvider, createTheme, Theme } from '@mui/material';
 import Login from './pages/auth/Login';
 import Register from './pages/auth/Register';
 import Profile from './pages/user/Profile';
@@ -8,9 +9,9 @@ import TaskForm from './pages/tasks/TaskForm';
 import TaskListForm from './pages/tasks/TaskListForm';
 import SharedLists from './pages/tasks/SharedLists';
 
-const theme = createTheme();
+const theme: Theme = createTheme();
 
-function App() {
+const App: React.FC = () => {
   return (
     <ThemeProvider theme={theme}>
       <Router>
@@ -24,11 +25,11 @@ function App() {
           <Route path="/task-lists/:listId/edit" element={<TaskListForm />} />
           <Route path="/task-lists/:listId/tasks/new" element={<TaskForm />} />
           <Route path="/task-lists/:listId/tasks/:taskId/edit" element={<TaskForm />} />
-          <Route path="/" element={<Login />} />
+          <Route path="/" element={<Register />} />
         </Routes>
       </Router>
     </ThemeProvider>
   );
-}
+};
 
 export default App;

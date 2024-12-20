@@ -8,16 +8,19 @@ import {
   TextField,
   Button,
   Paper,
-  Stack
+  Stack,
 } from '@mui/material';
 
+interface TaskListFormData {
+  name: string;
+}
+
 export default function TaskListForm() {
+  
   const navigate = useNavigate();
-  const { listId } = useParams();
-  const [formData, setFormData] = useState({
-    name: '',
-  });
-  const [loading, setLoading] = useState(false);
+  const { listId } = useParams<{ listId?: string }>();
+  const [formData, setFormData] = useState<TaskListFormData>({ name: '' });
+  const [loading, setLoading] = useState<boolean>(false);
 
   useEffect(() => {
     if (listId) {
@@ -25,18 +28,16 @@ export default function TaskListForm() {
     }
   }, [listId]);
 
-  const fetchTaskList = async () => {
+  const fetchTaskList = async (): Promise<void> => {
     try {
-      const response = await api.get(`/task-lists/${listId}`);
-      setFormData({
-        name: response.data.name,
-      });
+      const response = await api.get<{ name: string }>(`/task-lists/${listId}`);
+      setFormData({ name: response.data.name });
     } catch (error) {
       console.error('Error fetching task list:', error);
     }
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent): Promise<void> => {
     e.preventDefault();
     setLoading(true);
     try {
@@ -51,10 +52,6 @@ export default function TaskListForm() {
     } finally {
       setLoading(false);
     }
-  };
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
   return (

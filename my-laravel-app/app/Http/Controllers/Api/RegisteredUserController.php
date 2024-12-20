@@ -29,8 +29,8 @@ class RegisteredUserController extends Controller
     
         return response()->json([
             'user' => $user,
-            'access_token' => $accessToken,
-            'access_token_expiration' => config('sanctum.access_token_expiration'),
+            'token' => $accessToken,
+            'token_expiration' => config('sanctum.access_token_expiration'),
         ], 201);
     }
 }

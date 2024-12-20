@@ -15,24 +15,50 @@ import {
     Divider,
     CircularProgress,
     Button,
-    Modal,
-    TextField,
-    MenuItem,
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit';
-import DeleteIcon from '@mui/icons-material/Delete';
-import ShareIcon from '@mui/icons-material/Share';
 import { useNavigate } from 'react-router-dom';
 
-export default function SharedLists() {
+// Define types for the API response
+interface Task {
+    id: number;
+    task_list_id: number;
+    title: string;
+    description: string;
+    completed: boolean;
+    created_at: string;
+    updated_at: string;
+}
 
+interface SharedListPivot {
+    user_id: number;
+    task_list_id: number;
+    permission: 'view' | 'edit';
+    created_at: string;
+    updated_at: string;
+}
+
+interface SharedList {
+    id: number;
+    user_id: number;
+    name: string;
+    created_at: string;
+    updated_at: string;
+    pivot: SharedListPivot;
+    tasks: Task[];
+}
+
+export default function SharedLists() {
+    
     const navigate = useNavigate();
-    const [loading, setLoading] = useState(true);
-    const [sharedLists, setSharedLists] = useState([]);
-    const fetchSharedLists = async () => {
+    const [loading, setLoading] = useState<boolean>(true);
+    const [sharedLists, setSharedLists] = useState<SharedList[]>([]);
+
+    // Fetch shared lists from the API
+    const fetchSharedLists = async (): Promise<void> => {
         try {
-            const response = await api.get('/shared-lists');
+            const response = await api.get<SharedList[]>('/shared-lists');
             setSharedLists(response.data);
         } catch (error) {
             console.error('Error fetching shared lists:', error);
@@ -41,7 +67,8 @@ export default function SharedLists() {
         }
     };
 
-    const handleToggleTask = async (taskId: number) => {
+    // Toggle task completion status
+    const handleToggleTask = async (taskId: number): Promise<void> => {
         try {
             await api.patch(`/tasks/${taskId}/toggle`);
             fetchSharedLists(); // Refresh the lists
@@ -73,7 +100,7 @@ export default function SharedLists() {
                     </Box>
 
                     <Box>
-                        <Button variant="contained" sx={{my: 2}} onClick={() => navigate('/tasks')}>View Tasks</Button>
+                        <Button variant="contained" sx={{ my: 2 }} onClick={() => navigate('/tasks')}>View Tasks</Button>
                     </Box>
 
                     {sharedLists?.length == 0 && !loading && (
